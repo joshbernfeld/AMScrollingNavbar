@@ -197,10 +197,8 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     let animations = {
       self.scrollWithDelta(self.fullNavbarHeight, ignoreDelay: true)
       visibleViewController.view.setNeedsLayout()
-      if self.navigationBar.isTranslucent {
-        let currentOffset = self.contentOffset
-        self.scrollView()?.contentOffset = CGPoint(x: currentOffset.x, y: currentOffset.y + self.navbarHeight)
-      }
+      let currentOffset = self.contentOffset
+      self.scrollView()?.contentOffset = CGPoint(x: currentOffset.x, y: currentOffset.y + self.navbarHeight)
     }
 
     if animated {
@@ -235,10 +233,8 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
       self.lastContentOffset = 0
       self.scrollWithDelta(-self.fullNavbarHeight, ignoreDelay: true)
       visibleViewController.view.setNeedsLayout()
-      if self.navigationBar.isTranslucent {
-        let currentOffset = self.contentOffset
-        self.scrollView()?.contentOffset = CGPoint(x: currentOffset.x, y: currentOffset.y - self.navbarHeight)
-      }
+      let currentOffset = self.contentOffset
+      self.scrollView()?.contentOffset = CGPoint(x: currentOffset.x, y: currentOffset.y - self.navbarHeight)
     }
     if animated {
       state = .scrolling
@@ -419,7 +415,6 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
 
     updateSizing(scrollDelta)
     updateNavbarAlpha()
-    restoreContentOffset(scrollDelta)
     updateFollowers(scrollDelta)
     updateContentInset(scrollDelta)
   }
@@ -456,26 +451,6 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     // Move the navigation bar
     frame.origin = CGPoint(x: frame.origin.x, y: frame.origin.y - delta)
     navigationBar.frame = frame
-
-    // Resize the view if the navigation bar is not translucent
-    if !navigationBar.isTranslucent {
-      let navBarY = navigationBar.frame.origin.y + navigationBar.frame.size.height
-      frame = topViewController.view.frame
-      frame.origin = CGPoint(x: frame.origin.x, y: navBarY)
-      frame.size = CGSize(width: frame.size.width, height: view.frame.size.height - (navBarY) - tabBarOffset)
-      topViewController.view.frame = frame
-    }
-  }
-
-  private func restoreContentOffset(_ delta: CGFloat) {
-    if navigationBar.isTranslucent || delta == 0 {
-      return
-    }
-
-    // Hold the scroll steady until the navbar appears/disappears
-    if let scrollView = scrollView() {
-      scrollView.setContentOffset(CGPoint(x: contentOffset.x, y: contentOffset.y - delta), animated: false)
-    }
   }
 
   private func checkForPartialScroll() {
