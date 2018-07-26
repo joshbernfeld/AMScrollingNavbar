@@ -220,7 +220,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
    - parameter animated: If true the scrolling is animated. Defaults to `true`
    - parameter duration: Optional animation duration. Defaults to 0.1
    */
-  open func showNavbar(animated: Bool = true, duration: TimeInterval = 0.1) {
+open func showNavbar(animated: Bool = true, adjustContentOffset: Bool = true, duration: TimeInterval = 0.1) {
     guard let _ = self.scrollableView, let visibleViewController = self.visibleViewController else { return }
 
     guard state == .collapsed else {
@@ -233,8 +233,10 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
       self.lastContentOffset = 0
       self.scrollWithDelta(-self.fullNavbarHeight, ignoreDelay: true)
       visibleViewController.view.setNeedsLayout()
-      let currentOffset = self.contentOffset
-      self.scrollView()?.contentOffset = CGPoint(x: currentOffset.x, y: currentOffset.y - self.navbarHeight)
+      if(adjustContentOffset) {
+        let currentOffset = self.contentOffset
+        self.scrollView()?.contentOffset = CGPoint(x: currentOffset.x, y: currentOffset.y - self.navbarHeight)
+      }
     }
     if animated {
       state = .scrolling
@@ -254,9 +256,9 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
 
    - parameter showingNavbar: If true the navbar is show, otherwise it remains in its current state. Defaults to `true`
    */
-  open func stopFollowingScrollView(showingNavbar: Bool = true) {
+  open func stopFollowingScrollView(showingNavbar: Bool = true, animated: Bool = true, adjustContentOffset: Bool = true) {
     if showingNavbar {
-      showNavbar(animated: true)
+      showNavbar(animated: animated, adjustContentOffset: adjustContentOffset)
     }
     if let gesture = gestureRecognizer {
       scrollableView?.removeGestureRecognizer(gesture)
@@ -430,7 +432,8 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
   private func updateFollowers(_ delta: CGFloat) {
     followers.forEach {
       guard let tabBar = $0.view as? UITabBar else {
-        $0.view?.transform = $0.view?.transform.translatedBy(x: 0, y: CGFloat($0.direction.rawValue) * delta * (($0.view?.frame.height ?? 0) / navigationBar.frame.height)) ?? .identity
+        guard let view = $0.view else { return }
+        view.transform = view.transform.translatedBy(x: 0, y: CGFloat($0.direction.rawValue) * delta * (view.frame.height / (navigationBar.frame.height+1)))
         return
       }
       tabBar.isTranslucent = true
