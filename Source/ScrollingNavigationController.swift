@@ -321,6 +321,14 @@ open func showNavbar(animated: Bool = true, adjustContentOffset: Bool = true, du
     super.viewWillTransition(to: size, with: coordinator)
     showNavbar()
   }
+  
+  override open func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    
+    // Fixes an issue where the nav bar could be blank if this was called before the view was layed out
+    // E.g. a splash screen overtop the navigation controller when it is first setup
+    self.updateNavbarAlpha()
+  }
 
   // MARK: - Notification handler
 
