@@ -137,6 +137,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
   var delayDistance: CGFloat = 0
   var maxDelay: CGFloat = 0
   var scrollableView: UIView?
+  weak var controller: UIViewController?
   var lastContentOffset = CGFloat(0.0)
   var scrollSpeedFactor: CGFloat = 1
   var collapseDirectionFactor: CGFloat = 1 // Used to determine the sign of content offset depending of collapse direction
@@ -153,8 +154,9 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
    - parameter collapseDirection : The direction of scrolling that the navigation bar should be collapsed
    - parameter followers: An array of `NavigationBarFollower`s that will follow the navbar. The wrapper holds the direction that the view will follow
    */
-  open func followScrollView(_ scrollableView: UIView, delay: Double = 0, scrollSpeedFactor: Double = 1, collapseDirection: NavigationBarCollapseDirection = .scrollDown, followers: [NavigationBarFollower] = []) {
+  open func followScrollView(_ scrollableView: UIView, controller: UIViewController, delay: Double = 0, scrollSpeedFactor: Double = 1, collapseDirection: NavigationBarCollapseDirection = .scrollDown, followers: [NavigationBarFollower] = []) {
     self.scrollableView = scrollableView
+    self.controller = controller
 
     gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(ScrollingNavigationController.handlePan(_:)))
     gestureRecognizer?.maximumNumberOfTouches = 1
@@ -264,6 +266,7 @@ open func showNavbar(animated: Bool = true, adjustContentOffset: Bool = true, du
       scrollableView?.removeGestureRecognizer(gesture)
     }
     scrollableView = .none
+    controller = .none
     gestureRecognizer = .none
     scrollingNavbarDelegate = .none
     scrollingEnabled = false
@@ -487,7 +490,7 @@ open func showNavbar(animated: Bool = true, adjustContentOffset: Bool = true, du
   }
 
   private func updateNavbarAlpha() {
-    guard let navigationItem = topViewController?.navigationItem else { return }
+    guard let navigationItem = self.controller?.navigationItem else { return }
 
     let frame = navigationBar.frame
 
